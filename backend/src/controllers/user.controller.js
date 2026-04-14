@@ -103,7 +103,36 @@ const loginUser = async (req, res) => {
     }
 }
 
+const logoutUser = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const user = await User.findOne({ 
+            email 
+        });
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            status:true,
+            message: "User logged out succesfully"
+        })
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 export {
     registerUser,
-    loginUser
+    loginUser,
+    logoutUser
 };
