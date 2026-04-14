@@ -4,10 +4,6 @@ const registerUser = async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
-        username = username?.trim();
-        email = email?.trim().toLowerCase();
-        password = password?.trim();
-
         if (!username || !email || !password) {
             return res.status(400).json({
                 success: false,
@@ -52,7 +48,7 @@ const registerUser = async (req, res) => {
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: "Something went wrong"
+            message: error.message
         });
     }
 };
