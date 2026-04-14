@@ -11,15 +11,15 @@ const startServer = async () => {
     try {
         await connectDB();
 
-        app.on("error", (error) => {
-            console.error("App error:", error);
-            process.exit(1);
-        });
-
         const PORT = process.env.PORT || 5000;
 
-        app.listen(PORT, () => {
+        const server = app.listen(PORT, () => {
             console.log(`Server is running at port ${PORT}`);
+        });
+
+        server.on("error", (error) => {
+            console.error("Server error:", error);
+            process.exit(1);
         });
 
     } catch (error) {
