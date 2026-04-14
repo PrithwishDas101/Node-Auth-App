@@ -1,4 +1,5 @@
 import { User } from "../models/user.model.js";
+import jwt from "jsonwebtoken";
 
 const registerUser = async (req, res) => {
     try {
@@ -55,12 +56,7 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     try {
-
         const { email, password } = req.body;
-
-        const user = await User.findOne({
-            email: email
-        })
 
         if (!email || !password) {
             return res.status(400).json({
@@ -69,11 +65,13 @@ const loginUser = async (req, res) => {
             });
         }
 
+        const user = await User.findOne({ email });
+
         if (!user) {
             return res.status(400).json({
                 success: false,
                 message: "User does not exist"
-            })
+            });
         }
 
         const isMatched = await user.comparePassword(password);
@@ -81,9 +79,20 @@ const loginUser = async (req, res) => {
         if (!isMatched) {
             return res.status(400).json({
                 success: false,
-                message: "invalid credentials"
-            })
+                message: "Invalid credentials"
+            });
         }
+
+        const token = jwt.sign(
+            { id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false
+        });
 
         return res.status(200).json({
             success: true,
@@ -93,7 +102,7 @@ const loginUser = async (req, res) => {
                 email: user.email,
                 username: user.username
             }
-        })
+        });
 
     } catch (error) {
         return res.status(500).json({
@@ -101,27 +110,16 @@ const loginUser = async (req, res) => {
             message: error.message
         });
     }
-}
+};
 
 const logoutUser = async (req, res) => {
     try {
-        const { email } = req.body;
+        res.clearCookie("token");
 
-        const user = await User.findOne({ 
-            email 
+        return res.status(200).json({
+            success: true,
+            message: "User logged out successfully"
         });
-
-        if (!user) {
-            return res.status(400).json({
-                success: false,
-                message: "User not found"
-            });
-        }
-
-        res.status(200).json({
-            status:true,
-            message: "User logged out succesfully"
-        })
 
     } catch (error) {
         return res.status(500).json({
